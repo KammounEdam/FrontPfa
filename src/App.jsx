@@ -6,12 +6,12 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import Box from '@mui/material/Box';
+import "./components/styles/MedicalStyles.css"; // Importer nos styles médicaux personnalisés
 
 
 import Navbar from "./components/layout/Navbar";
 import ProSidebar from "./components/layout/ProSidebar";
 import { CssBaseline, useTheme, useMediaQuery, ThemeProvider, createTheme } from "@mui/material";
-import { indigo, deepPurple } from '@mui/material/colors';
 
 // Importer les composants de page
 import Dashboard from "./components/pages/Dashboard";
@@ -27,6 +27,8 @@ import DossierMedicalList from "./components/pages/DossierMedical/DossierMedical
 import AnalyseList from "./components/pages/Analyses/AnalyseList";
 
 import UploadAndDisplayImage from "./components/Annotate/UploadAndDisplayImage";
+import AnalyseDetails from "./components/pages/Analyses/AnalyseDetails";
+import DetailPatient from "./components/pages/Patient/DetailPatient";
 
 const AppLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -43,7 +45,79 @@ const AppLayout = ({ children }) => {
     palette: {
       mode: darkMode ? 'dark' : 'light',
       primary: {
-        main: darkMode ? deepPurple[500] : indigo[500],
+        main: darkMode ? '#0d47a1' : '#1976d2', // Bleu médical professionnel
+        light: '#42a5f5', // Bleu clair
+        dark: '#0d47a1', // Bleu foncé
+        contrastText: '#ffffff',
+      },
+      secondary: {
+        main: darkMode ? '#2c5282' : '#3182ce', // Bleu médical
+        light: '#63b3ed',
+        dark: '#2c5282',
+        contrastText: '#ffffff',
+      },
+      error: {
+        main: '#e53e3e', // Rouge pour les erreurs
+      },
+      warning: {
+        main: '#dd6b20', // Orange pour les avertissements
+      },
+      info: {
+        main: '#3182ce', // Bleu informatif
+      },
+      success: {
+        main: '#38a169', // Vert pour les succès
+      },
+      background: {
+        default: darkMode ? '#1a202c' : '#f7fafc',
+        paper: darkMode ? '#2d3748' : '#ffffff',
+      },
+      text: {
+        primary: darkMode ? '#f7fafc' : '#2d3748',
+        secondary: darkMode ? '#e2e8f0' : '#4a5568',
+      },
+    },
+    typography: {
+      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+      h1: {
+        fontWeight: 600,
+      },
+      h2: {
+        fontWeight: 600,
+      },
+      h3: {
+        fontWeight: 600,
+      },
+      h4: {
+        fontWeight: 600,
+      },
+      h5: {
+        fontWeight: 600,
+      },
+      h6: {
+        fontWeight: 600,
+      },
+    },
+    shape: {
+      borderRadius: 8,
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            padding: '8px 16px',
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)',
+          },
+        },
       },
     },
   });
@@ -64,7 +138,9 @@ const AppLayout = ({ children }) => {
               width: collapsed ? "80px" : "240px",
               transition: "width 0.3s ease, transform 0.3s ease",
               zIndex: 1300,
-              backgroundColor: darkMode ? "#1a1a2e" : "#f5f5f5",
+              background: darkMode
+                ? 'linear-gradient(180deg, #0d47a1 0%, #1976d2 100%)'
+                : 'linear-gradient(180deg, #1976d2 0%, #42a5f5 100%)',
               transform: {
                 xs: mobileSidebarOpen ? "translateX(0)" : "translateX(-100%)",
                 md: "translateX(0)",
@@ -109,8 +185,10 @@ const AppLayout = ({ children }) => {
                 },
                 height: "64px",
                 zIndex: 1200,
-                backgroundColor: darkMode ? "#1a1a2e" : "#1976d2",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                background: darkMode
+                  ? 'linear-gradient(90deg, #0d47a1 0%, #1976d2 100%)'
+                  : 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+                boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
                 display: "flex",
                 alignItems: "center",
               }}
@@ -135,7 +213,7 @@ const AppLayout = ({ children }) => {
               padding: { xs: 2, md: 3 },
               flexGrow: 1,
               overflowY: "auto",
-              backgroundColor: darkMode ? "#121212" : "#f5f5f5",
+              backgroundColor: darkMode ? "#1a202c" : "#f7fafc",
               marginTop: isAuthPage ? "0" : "64px",
             }}
           >
@@ -154,7 +232,7 @@ const App = () => {
         <Routes>
           {/* Rediriger '/' vers '/dashboard' si l'utilisateur est connecté */}
           <Route path="/" element={<Navigate to="/dashboard" />} />
-         
+
           {/* Routes publiques (indépendantes du template) */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
@@ -208,16 +286,35 @@ const App = () => {
               </PrivateRoute>
             }
           />
-         
-     
+
+
           <Route
-            path="/analyses/:id/add-image"
+            path="/analyses/:analyseId/add-image"
             element={
               <PrivateRoute>
                 <UploadAndDisplayImage/>
               </PrivateRoute>
             }
           />
+
+           <Route
+            path="/analyses/:analyseId/detail"
+            element={
+              <PrivateRoute>
+                <AnalyseDetails/>
+              </PrivateRoute>
+            }
+          />
+                     <Route
+            path="/patients/:id"
+            element={
+              <PrivateRoute>
+                <DetailPatient/>
+              </PrivateRoute>
+            }
+          />
+
+
         </Routes>
       </AppLayout>
     </Router>

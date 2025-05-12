@@ -11,10 +11,18 @@ import {
   Button,
   IconButton,
   Typography,
+  Box,
+  Container,
+  Divider,
+  Tooltip,
+  CircularProgress,
+  Card,
+  CardContent,
 } from "@mui/material";
-import { Edit, Delete, Add } from "@mui/icons-material";
+import { Edit, Delete, Person, PersonAdd } from "@mui/icons-material";
 import DeleteConfirmation from "../generique/DeleteConfirmation";
 import PatientForm from "../Patient/PatientForm"; // Formulaire pour l'ajout et la modification des patients
+import { useNavigate } from "react-router-dom";
 
 const PatientsList = () => {
   const [openDelete, setOpenDelete] = useState(false);
@@ -23,9 +31,10 @@ const PatientsList = () => {
   const [openForm, setOpenForm] = useState(false); // Contrôle d'ouverture du formulaire
   const [selectedPatient, setSelectedPatient] = useState(null); // Patient sélectionné pour modification
   const [loading, setLoading] = useState(true); // Indicateur de chargement
+  const navigate = useNavigate();
 
   const API_URL = "https://localhost:7162/api/patients";
-  
+
   // Récupérer l'ID du médecin depuis localStorage
   const medecinId = JSON.parse(localStorage.getItem('user'))?.userId;
 
@@ -71,59 +80,186 @@ const PatientsList = () => {
 
   // Si les patients sont en cours de chargement
   if (loading) {
-    return <Typography variant="h6">Chargement des patients...</Typography>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>Chargement des patients...</Typography>
+      </Box>
+    );
   }
 
   return (
-    <div>
-      <Typography variant="h4" gutterBottom>
-        Gestion des Patients
-      </Typography>
-
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<Add />}
-        onClick={handleAddPatient} // Ouvrir le formulaire d'ajout
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Card
+        elevation={3}
+        sx={{
+          borderRadius: 3,
+          overflow: 'hidden',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            boxShadow: '0 15px 35px rgba(0, 0, 0, 0.15)',
+            transform: 'translateY(-5px)'
+          }
+        }}
       >
-        Ajouter un Patient
-      </Button>
+        <CardContent sx={{ p: 0 }}>
+          <Box sx={{
+            p: 3,
+            background: 'linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%)',
+            color: 'white',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+          }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                <Person sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Gestion des Patients
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<PersonAdd />}
+                onClick={handleAddPatient}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+                  background: 'linear-gradient(135deg, #0288d1 0%, #03a9f4 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #01579b 0%, #0288d1 100%)',
+                    boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Ajouter un Patient
+              </Button>
+            </Box>
+          </Box>
 
-      <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell><b>ID</b></TableCell>
-              <TableCell><b>Nom</b></TableCell>
-              <TableCell><b>Date de Naissance</b></TableCell>
-              <TableCell><b>Télephone</b></TableCell>
-              <TableCell><b>Actions</b></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-          {patients.map((patient) => {
-  console.log(patient);  // Add this line to check the patient data
-  return (
-    <TableRow key={patient.id}>
-      <TableCell>{patient.id}</TableCell>
-      <TableCell>{patient.nom}</TableCell>
-      <TableCell>{new Date(patient.dateNaissance).toLocaleDateString()}</TableCell>
-      <TableCell>{patient.numTel}</TableCell>
-      <TableCell>
-        <IconButton color="primary" onClick={() => handleEditPatient(patient)}>
-          <Edit />
-        </IconButton>
-        <IconButton color="error" onClick={() => handleOpenDelete(patient)}>
-          <Delete />
-        </IconButton>
-      </TableCell>
-    </TableRow>
-  );
-})}
+          <Divider />
 
-          </TableBody>
-        </Table>
-      </TableContainer>
+          <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell
+                    sx={{
+                      fontWeight: 'bold',
+                      backgroundColor: '#e3f2fd',
+                      color: '#0d47a1',
+                      borderBottom: '2px solid #1976d2'
+                    }}
+                  >
+                    ID
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: 'bold',
+                      backgroundColor: '#e3f2fd',
+                      color: '#0d47a1',
+                      borderBottom: '2px solid #1976d2'
+                    }}
+                  >
+                    Nom
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: 'bold',
+                      backgroundColor: '#e3f2fd',
+                      color: '#0d47a1',
+                      borderBottom: '2px solid #1976d2'
+                    }}
+                  >
+                    Date de Naissance
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: 'bold',
+                      backgroundColor: '#e3f2fd',
+                      color: '#0d47a1',
+                      borderBottom: '2px solid #1976d2'
+                    }}
+                  >
+                    Téléphone
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: 'bold',
+                      backgroundColor: '#e3f2fd',
+                      color: '#0d47a1',
+                      borderBottom: '2px solid #1976d2'
+                    }}
+                  >
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {patients.map((patient) => (
+                  <TableRow
+                    key={patient.id}
+                    hover
+                    sx={{
+                      cursor: "pointer",
+                      '&:nth-of-type(even)': { backgroundColor: '#f5f9ff' },
+                      '&:hover': {
+                        backgroundColor: '#e3f2fd',
+                        boxShadow: 'inset 0 0 0 1px #bbdefb'
+                      },
+                      transition: 'all 0.2s ease'
+                    }}
+                    onClick={() => navigate(`/patients/${patient.id}`)}
+                  >
+                    <TableCell>{patient.id}</TableCell>
+                    <TableCell sx={{ fontWeight: 'medium' }}>{patient.nom}</TableCell>
+                    <TableCell>{new Date(patient.dateNaissance).toLocaleDateString()}</TableCell>
+                    <TableCell>{patient.numTel}</TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Tooltip title="Modifier">
+                        <IconButton
+                          onClick={() => handleEditPatient(patient)}
+                          sx={{
+                            mr: 1,
+                            color: '#1976d2',
+                            backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(25, 118, 210, 0.15)',
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 3px 5px rgba(0, 0, 0, 0.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <Edit />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Supprimer">
+                        <IconButton
+                          onClick={() => handleOpenDelete(patient)}
+                          sx={{
+                            color: '#f44336',
+                            backgroundColor: 'rgba(244, 67, 54, 0.08)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(244, 67, 54, 0.15)',
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 3px 5px rgba(0, 0, 0, 0.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
 
       {/* Formulaire d'ajout ou modification de patient */}
       <PatientForm
@@ -142,7 +278,7 @@ const PatientsList = () => {
         entityName="Patient"
         apiUrl={API_URL}
       />
-    </div>
+    </Container>
   );
 };
 

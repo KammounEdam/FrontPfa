@@ -1,40 +1,80 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, IconButton, Typography } from "@mui/material";
-import { Edit, Delete, Add } from "@mui/icons-material";
+import {
+  Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Button, IconButton, Typography
+} from "@mui/material";
+import { Edit, Delete, Add, AddPhotoAlternate } from "@mui/icons-material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteConfirmation from "../generique/DeleteConfirmation";
-import AnalyseForm from "./AnalyseForm"; // Formulaire pour l'ajout et la modification des analyses
+import AnalyseForm from "./AnalyseForm";
 import { useNavigate } from "react-router-dom";
-import { AddPhotoAlternate } from "@mui/icons-material"; // Icône ajout image
 
-const AnalyseList = () => {
+const AnalyseList = ({ patientId }) => {
   const [openDelete, setOpenDelete] = useState(false);
-  const [analyseToDelete, setAnalyseToDelete] = useState(null); // Analyse à supprimer
+  const [analyseToDelete, setAnalyseToDelete] = useState(null);
   const [analyses, setAnalyses] = useState([]);
-  const [openForm, setOpenForm] = useState(false); // Contrôle d'ouverture du formulaire
-  const [selectedAnalyse, setSelectedAnalyse] = useState(null); // Analyse sélectionnée pour modification
-  const [loading, setLoading] = useState(true); // Indicateur de chargement
+  const [openForm, setOpenForm] = useState(false);
+  const [selectedAnalyse, setSelectedAnalyse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [dossierMedicalId, setDossierMedicalId] = useState(null);
+
   const navigate = useNavigate();
   const API_URL = "https://localhost:7162/api/Analyse";
 
-  // Charger toutes les analyses
   useEffect(() => {
-    fetchAnalyses();
-  }, []);
-
-  const fetchAnalyses = async () => {
-    try {
-      const response = await axios.get(API_URL);
-      setAnalyses(response.data);
+    if (patientId) {
+      fetchDossierMedicalId(patientId);
+    } else {
+      console.error("Aucun patientId fourni.");
       setLoading(false);
+      setLoadError(true);
+    }
+  }, [patientId]);
+
+  const fetchDossierMedicalId = async (id) => {
+    try {
+      const response = await axios.get(`https://localhost:7162/api/DossiersMedicaux/patient/${id}`);
+      const dossierId = response.data?.id;
+      if (dossierId) {
+        setDossierMedicalId(dossierId);
+        console.log("✅ Dossier médical récupéré :", dossierId);
+      } else {
+        console.warn("⚠️ ID du dossier médical non trouvé :", response.data);
+        setLoadError(true);
+      }
     } catch (error) {
-      console.error("Erreur lors du chargement des analyses:", error);
+      console.error("❌ Erreur récupération dossier médical :", error);
+      setLoadError(true);
+    } finally {
       setLoading(false);
     }
   };
-  const handleNavigateToAddImage = (analyseId) => {
-    navigate(`/analyses/${analyseId}/add-image`);
+
+  useEffect(() => {
+    if (dossierMedicalId) {
+      fetchAnalyses();
+    }
+  }, [dossierMedicalId]);
+
+  const fetchAnalyses = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/dossier/${dossierMedicalId}`);
+      setAnalyses(response.data);
+      setLoadError(false);
+    } catch (error) {
+      console.error("❌ Erreur chargement analyses :", error);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleNavigateToAddImage = (id) => navigate(`/analyses/${id}/add-image`);
+  const handleNavigateToAnalyseDetail = (id) => navigate(`/analyses/${id}/detail`);
+
   const handleOpenDelete = (analyse) => {
     setAnalyseToDelete(analyse);
     setOpenDelete(true);
@@ -42,100 +82,95 @@ const AnalyseList = () => {
 
   const handleCloseDelete = () => {
     setOpenDelete(false);
-    setAnalyseToDelete(null); // Réinitialiser l'analyse à supprimer
+    setAnalyseToDelete(null);
   };
 
-  // Gérer l'ouverture du formulaire pour ajout
   const handleAddAnalyse = () => {
-    setSelectedAnalyse(null); // Aucun analyse sélectionnée (ajout)
-    setOpenForm(true); // Ouvrir le formulaire
+    setSelectedAnalyse(null);
+    setOpenForm(true);
   };
 
-  // Gérer l'ouverture du formulaire pour modification
   const handleEditAnalyse = (analyse) => {
-    setSelectedAnalyse(analyse); // Assigner l'analyse pour modification
-    setOpenForm(true); // Ouvrir le formulaire en mode modification
+    console.log("Édition de l'analyse:", analyse);
+    setSelectedAnalyse(analyse);
+    setOpenForm(true);
   };
 
-  // Si les analyses sont en cours de chargement
   if (loading) {
     return <Typography variant="h6">Chargement des analyses...</Typography>;
   }
 
   return (
     <div>
-      <Typography variant="h4" gutterBottom>
-        Gestion des Analyses
-      </Typography>
 
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<Add />}
-        onClick={handleAddAnalyse} // Ouvrir le formulaire d'ajout
-      >
+
+      <Button variant="contained" color="primary" startIcon={<Add />} onClick={handleAddAnalyse}>
         Ajouter une Analyse
       </Button>
 
-      <TableContainer component={Paper} sx={{ marginTop: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell><b>ID</b></TableCell>
-              <TableCell><b>Date d'Analyse</b></TableCell>
-              <TableCell><b>Résultat</b></TableCell>
-              <TableCell><b>Dossier Médical</b></TableCell>
-              <TableCell><b>Ajoute Image</b></TableCell>
-              <TableCell><b>Voir Image</b></TableCell>
-              <TableCell><b>Voir Détails</b></TableCell>
-              <TableCell><b>Actions</b></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {analyses.map((analyse) => {
-              return (
+      {loadError ? (
+        <Typography color="error" sx={{ mt: 2 }}>
+          ❌ Erreur lors du chargement des analyses ou du dossier médical.
+        </Typography>
+      ) : (
+        <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell><b>ID</b></TableCell>
+                <TableCell><b>Date</b></TableCell>
+                <TableCell><b>Rapport</b></TableCell>
+                <TableCell><b>Dossier Médical</b></TableCell>
+                <TableCell><b>Ajouter Image</b></TableCell>
+                <TableCell><b>Voir</b></TableCell>
+                <TableCell><b>Actions</b></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {analyses.map((analyse) => (
                 <TableRow key={analyse.id}>
                   <TableCell>{analyse.id}</TableCell>
                   <TableCell>{new Date(analyse.dateAnalyse).toLocaleDateString()}</TableCell>
-                  <TableCell>{analyse.resultat}</TableCell>
+                  <TableCell>{analyse.rapport}</TableCell>
                   <TableCell>{analyse.dossierMedicalId}</TableCell>
                   <TableCell>
-                    <IconButton color="secondary" onClick={() => handleNavigateToAddImage(analyse.id)}>
+                    <IconButton onClick={() => handleNavigateToAddImage(analyse.id)} color="secondary">
                       <AddPhotoAlternate />
                     </IconButton>
                   </TableCell>
-                  <TableCell></TableCell>
-                  <TableCell></TableCell>
-                  {/* Affichage du champ analyse */}
                   <TableCell>
-                    <IconButton color="primary" onClick={() => handleEditAnalyse(analyse)}>
+                    <IconButton onClick={() => handleNavigateToAnalyseDetail(analyse.id)} color="secondary">
+                      <VisibilityIcon />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleEditAnalyse(analyse)} color="primary">
                       <Edit />
                     </IconButton>
-                    <IconButton color="error" onClick={() => handleOpenDelete(analyse)}>
+                    <IconButton onClick={() => handleOpenDelete(analyse)} color="error">
                       <Delete />
                     </IconButton>
                   </TableCell>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-      {/* Formulaire d'ajout ou modification de analyse */}
       <AnalyseForm
         open={openForm}
-        handleClose={() => setOpenForm(false)} // Fermer le formulaire
-        selectedAnalyse={selectedAnalyse} // Passer l'analyse pour modification
-        refreshAnalyses={fetchAnalyses} // Rafraîchir la liste après modification
+        handleClose={() => setOpenForm(false)}
+        selectedAnalyse={selectedAnalyse}
+        refreshAnalyses={fetchAnalyses}
+        dossierMedicalId={dossierMedicalId}
       />
 
-      {/* Confirmation de suppression */}
       <DeleteConfirmation
         open={openDelete}
         handleClose={handleCloseDelete}
-        entity={analyseToDelete} // Passer l'analyse à supprimer
-        refreshEntities={fetchAnalyses} // Rafraîchir après suppression
+        entity={analyseToDelete}
+        refreshEntities={fetchAnalyses}
         entityName="Analyse"
         apiUrl={API_URL}
       />

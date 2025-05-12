@@ -56,12 +56,12 @@ const LoginForm = () => {
         <MDBRow className='g-0 align-items-center h-100'>
           {/* Form Section */}
           <MDBCol md='6' className='d-flex align-items-center justify-content-center'>
-            <MDBCard className='w-100 mx-4' style={{ background: 'hsla(0, 0%, 100%, 0.85)', backdropFilter: 'blur(30px)' }}>
+            <MDBCard className='w-100 mx-4 auth-card'>
               <MDBCardBody className='p-5'>
-                <h2 className="fw-bold mb-5 text-center">Connexion</h2>
+                <h2 className="fw-bold mb-5 text-center" style={{ color: '#2c7a7b' }}>Connexion</h2>
 
                 <MDBInput
-                  wrapperClass='mb-4'
+                  wrapperClass='mb-4 auth-input'
                   label='Email'
                   id='email'
                   type='email'
@@ -71,7 +71,7 @@ const LoginForm = () => {
                 />
 
                 <MDBInput
-                  wrapperClass='mb-4'
+                  wrapperClass='mb-4 auth-input'
                   label='Mot de passe'
                   id='password'
                   type='password'
@@ -80,31 +80,31 @@ const LoginForm = () => {
                   required
                 />
 
-                <MDBBtn type="submit" className='w-100 mb-4' size='md'>Se connecter</MDBBtn>
+                <MDBBtn type="submit" className='w-100 mb-4 auth-button' size='md'>Se connecter</MDBBtn>
 
                 <div className="text-center">
                   <p>Ou connectez-vous avec :</p>
 
-                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#3b5998' }}>
+                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#2c7a7b' }}>
                     <MDBIcon fab icon='facebook-f' />
                   </MDBBtn>
 
-                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#55acee' }}>
+                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#2c7a7b' }}>
                     <MDBIcon fab icon='twitter' />
                   </MDBBtn>
 
-                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#dd4b39' }}>
+                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#2c7a7b' }}>
                     <MDBIcon fab icon='google' />
                   </MDBBtn>
 
-                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#333333' }}>
+                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#2c7a7b' }}>
                     <MDBIcon fab icon='github' />
                   </MDBBtn>
                 </div>
 
                 {/* Link to Register page */}
                 <div className="text-center mt-3">
-                  <p>Pas de compte ? <span onClick={handleRegisterRedirect} style={{ color: '#007bff', cursor: 'pointer' }}>S'inscrire ici</span></p>
+                  <p>Pas de compte ? <span onClick={handleRegisterRedirect} className="auth-link">S'inscrire ici</span></p>
                 </div>
               </MDBCardBody>
             </MDBCard>

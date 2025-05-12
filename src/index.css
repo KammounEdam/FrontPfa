@@ -1,4 +1,50 @@
+/* Palette de couleurs médicale professionnelle */
+:root {
+  --primary-color: #1976d2; /* Bleu médical professionnel */
+  --primary-light: #42a5f5; /* Bleu clair */
+  --primary-dark: #0d47a1; /* Bleu foncé */
+  --secondary-color: #3182ce; /* Bleu médical */
+  --accent-color: #2196f3; /* Bleu accent */
+  --text-primary: #2d3748; /* Gris foncé pour le texte */
+  --text-secondary: #4a5568; /* Gris moyen pour le texte secondaire */
+  --background-light: #f7fafc; /* Fond très clair */
+  --background-paper: #ffffff; /* Fond blanc pour les cartes */
+  --error-color: #e53e3e; /* Rouge pour les erreurs */
+  --success-color: #38a169; /* Vert pour les succès */
+  --warning-color: #dd6b20; /* Orange pour les avertissements */
+  --border-color: #e2e8f0; /* Couleur de bordure légère */
+  --gradient-blue: linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%); /* Dégradé de bleu */
+}
+
+body {
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background-color: var(--background-light);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+.MuiButton-containedPrimary {
+  background: var(--gradient-blue) !important;
+  color: #FFFFFF !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+.MuiButton-containedPrimary:hover {
+  background: linear-gradient(135deg, #01579b 0%, #0d47a1 50%, #1976d2 100%) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.MuiPaper-root {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Classe pour remplacer l'ancien style noir */
 .css-dip3t8 {
-  background-color: #000000 !important; /* Noir pur */
-  color: #FFFFFF !important; /* Texte blanc */
+  background: var(--gradient-blue) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
 }

@@ -6,7 +6,15 @@ import {
   DialogTitle,
   TextField,
   Button,
+  Box,
+  Typography,
+  InputAdornment,
+  Divider,
+  Alert,
+  Snackbar,
+  CircularProgress,
 } from "@mui/material";
+import { Person, CalendarMonth, Phone, Save, Cancel } from "@mui/icons-material";
 import axios from "axios";
 
 const PatientForm = ({ open, handleClose, selectedPatient, refreshPatients }) => {
@@ -17,10 +25,11 @@ const PatientForm = ({ open, handleClose, selectedPatient, refreshPatients }) =>
     dateNaissance: "",
     NumTel: "",
     medecinId: "",
-
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  // Remplir les données pour modification ou initialiser pour ajout
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -45,86 +54,221 @@ const PatientForm = ({ open, handleClose, selectedPatient, refreshPatients }) =>
     }
   }, [selectedPatient]);
 
-  // Gérer les changements des champs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Gérer la soumission du formulaire
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    setLoading(true);
+    setError("");
+
+    // Validation simple
+    if (!formData.nom.trim()) {
+      setError("Le nom du patient est requis");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.dateNaissance) {
+      setError("La date de naissance est requise");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.NumTel.trim()) {
+      setError("Le numéro de téléphone est requis");
+      setLoading(false);
+      return;
+    }
+
     const formattedData = {
       ...formData,
       id: selectedPatient?.id,
       dateNaissance: new Date(formData.dateNaissance).toISOString(),
     };
-  
-    console.log("Données envoyées à l'API :", formattedData); // 🔍 Debug
-  
+
     try {
       if (selectedPatient) {
         await axios.put(`${API_URL}/${selectedPatient.id}`, formattedData);
       } else {
         await axios.post(API_URL, formattedData);
       }
-  
+
+      setSuccess(true);
       refreshPatients();
-      handleClose();
+
+      // Fermer le formulaire après un court délai pour montrer le message de succès
+      setTimeout(() => {
+        handleClose();
+        setSuccess(false);
+      }, 1000);
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du patient:", error);
-      console.error("Réponse du serveur :", error.response?.data);
+      setError(error.response?.data?.message || "Erreur lors de l'enregistrement du patient");
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth>
-      <DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="sm"
+      sx={{
+        '& .MuiDialog-paper': {
+          borderRadius: 3,
+          boxShadow: 10,
+          p: 2,
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          fontWeight: "bold",
+          fontSize: "1.5rem",
+          textAlign: "center",
+          mb: 1,
+          color: 'primary.main',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Person sx={{ mr: 1, fontSize: '2rem' }} />
         {selectedPatient ? "Modifier le Patient" : "Ajouter un Patient"}
       </DialogTitle>
+
+      <Divider sx={{ mb: 2 }} />
+
+      {error && (
+        <Alert
+          severity="error"
+          sx={{ mx: 3, mb: 2 }}
+          onClose={() => setError("")}
+        >
+          {error}
+        </Alert>
+      )}
+
+      {success && (
+        <Alert
+          severity="success"
+          sx={{ mx: 3, mb: 2 }}
+        >
+          Patient {selectedPatient ? "modifié" : "ajouté"} avec succès!
+        </Alert>
+      )}
+
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            mt: 1,
+            px: 1,
+          }}
+        >
           <TextField
-            fullWidth
-            margin="dense"
             label="Nom"
             name="nom"
             value={formData.nom}
             onChange={handleChange}
+            fullWidth
             required
+            sx={{ borderRadius: 2 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Person color="primary" />
+                </InputAdornment>
+              ),
+            }}
           />
           <TextField
-            fullWidth
-            margin="dense"
             label="Date de Naissance"
             type="date"
             name="dateNaissance"
             value={formData.dateNaissance}
             onChange={handleChange}
+            fullWidth
             required
-            InputLabelProps={{ shrink: true }}
+            sx={{ borderRadius: 2 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CalendarMonth color="primary" />
+                </InputAdornment>
+              ),
+            }}
+            slotProps={{ input: { placeholder: 'AAAA-MM-JJ' } }}
           />
           <TextField
-            fullWidth
-            margin="dense"
             label="Numéro de Téléphone"
             name="NumTel"
-            value={formData.numTel}
+            value={formData.NumTel}
             onChange={handleChange}
+            fullWidth
             required
+            sx={{ borderRadius: 2 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Phone color="primary" />
+                </InputAdornment>
+              ),
+            }}
           />
-          <DialogActions>
-            <Button onClick={handleClose} color="secondary">
+
+          <DialogActions sx={{ justifyContent: "space-between", pt: 3 }}>
+            <Button
+              onClick={handleClose}
+              variant="outlined"
+              color="secondary"
+              startIcon={<Cancel />}
+              sx={{
+                textTransform: "none",
+                borderRadius: 2,
+                px: 3,
+                py: 1,
+              }}
+            >
               Annuler
             </Button>
-            <Button type="submit" variant="contained" color="primary">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Save />}
+              disabled={loading}
+              sx={{
+                textTransform: "none",
+                borderRadius: 2,
+                px: 3,
+                py: 1,
+              }}
+            >
               {selectedPatient ? "Modifier" : "Ajouter"}
             </Button>
           </DialogActions>
-        </form>
+        </Box>
       </DialogContent>
+
+      <Snackbar
+        open={success}
+        autoHideDuration={3000}
+        onClose={() => setSuccess(false)}
+      >
+        <Alert severity="success" sx={{ width: '100%' }}>
+          Patient {selectedPatient ? "modifié" : "ajouté"} avec succès!
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };

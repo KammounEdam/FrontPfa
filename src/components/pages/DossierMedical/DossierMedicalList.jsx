@@ -16,6 +16,7 @@ import DossierMedicalForm from "./DossierMedicalForm"; // Formulaire pour l'ajou
 import DeleteConfirmation from "../generique/DeleteConfirmation"; // Confirmation de suppression
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AnalyseListDialog from "./AnalyseListDialog";
+
 const DossierMedicalList = () => {
   const [dossiers, setDossiers] = useState([]);
   const [patients, setPatients] = useState([]); // Pour stocker les données des patients
@@ -53,15 +54,17 @@ const DossierMedicalList = () => {
       console.error("Erreur lors de la récupération des patients:", error);
     }
   };
+
   const handleOpenAnalyses = (dossierId) => {
     setSelectedDossierId(dossierId);
     setOpenAnalyses(true);
   };
-  
+
   const handleCloseAnalyses = () => {
     setOpenAnalyses(false);
     setSelectedDossierId(null);
   };
+
   const handleOpenForm = (dossier) => {
     setSelectedDossier(dossier);
     setOpenForm(true);
@@ -118,17 +121,16 @@ const DossierMedicalList = () => {
                 <TableRow key={dossier.id}>
                   <TableCell>{dossier.id}</TableCell>
                   <TableCell>{getPatientName(dossier.patientId)}</TableCell>
-                      <TableCell>
-                <Button
-                  variant="outlined"
-                  size="small"  
-                  startIcon={<VisibilityIcon />}
-                  onClick={() => handleOpenAnalyses(dossier.id)}
-                >
-                  Voir
-                </Button>
-              </TableCell>
-              {/* Affichage du champ analyse */}
+                  <TableCell>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<VisibilityIcon />}
+                      onClick={() => handleOpenAnalyses(dossier.id)}
+                    >
+                      Voir
+                    </Button>
+                  </TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleOpenForm(dossier)}>
                       <Edit />
@@ -143,11 +145,12 @@ const DossierMedicalList = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
       <AnalyseListDialog
-  open={openAnalyses}
-  onClose={handleCloseAnalyses}
-  dossierId={selectedDossierId}
-/>
+        open={openAnalyses}
+        onClose={handleCloseAnalyses}
+        dossierId={selectedDossierId}
+      />
 
       {/* Formulaire pour l'ajout et la modification */}
       <DossierMedicalForm

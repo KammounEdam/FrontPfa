@@ -1,0 +1,158 @@
+/* Styles médicaux professionnels pour les tableaux et formulaires */
+
+/* Styles pour les tableaux */
+.medical-table {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+.medical-table .MuiTableHead-root {
+  background-color: #2c7a7b !important; /* Bleu-vert médical */
+}
+
+.medical-table .MuiTableHead-root .MuiTableCell-head {
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 16px !important;
+}
+
+.medical-table .MuiTableBody-root .MuiTableRow-root:hover {
+  background-color: rgba(76, 209, 197, 0.1) !important; /* Bleu-vert très clair */
+}
+
+.medical-table .MuiTableBody-root .MuiTableCell-body {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Styles pour les formulaires */
+.medical-form-dialog .MuiDialogTitle-root {
+  background-color: #2c7a7b !important;
+  color: white !important;
+  padding: 16px 24px !important;
+}
+
+.medical-form-dialog .MuiDialogContent-root {
+  padding: 24px !important;
+}
+
+.medical-form-dialog .MuiTextField-root {
+  margin-bottom: 16px !important;
+}
+
+.medical-form-dialog .MuiDialogActions-root {
+  padding: 16px 24px !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Styles pour les boutons */
+.medical-button-primary {
+  background-color: #2c7a7b !important;
+  color: white !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.medical-button-primary:hover {
+  background-color: #285e61 !important;
+}
+
+.medical-button-secondary {
+  background-color: #e2e8f0 !important;
+  color: #2d3748 !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+}
+
+.medical-button-secondary:hover {
+  background-color: #cbd5e0 !important;
+}
+
+/* Styles pour les cartes */
+.medical-card {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden !important;
+}
+
+.medical-card-header {
+  background-color: #2c7a7b !important;
+  color: white !important;
+  padding: 16px 24px !important;
+}
+
+.medical-card-content {
+  padding: 24px !important;
+}
+
+/* Styles pour les détails du patient */
+.patient-details-card {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+  border-left: 4px solid #2c7a7b !important;
+  padding: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+.patient-details-title {
+  color: #2c7a7b !important;
+  font-weight: 600 !important;
+  margin-bottom: 16px !important;
+}
+
+.patient-details-label {
+  font-weight: 600 !important;
+  color: #4a5568 !important;
+}
+
+.patient-details-value {
+  color: #2d3748 !important;
+}
+
+/* Styles pour les icônes */
+.medical-icon {
+  color: #2c7a7b !important;
+}
+
+.medical-icon-button {
+  color: #2c7a7b !important;
+}
+
+.medical-icon-button:hover {
+  background-color: rgba(76, 209, 197, 0.1) !important;
+}
+
+/* Styles pour les alertes et notifications */
+.medical-alert-success {
+  background-color: #c6f6d5 !important;
+  color: #276749 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+}
+
+.medical-alert-error {
+  background-color: #fed7d7 !important;
+  color: #c53030 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+}
+
+.medical-alert-warning {
+  background-color: #feebc8 !important;
+  color: #c05621 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+}
+
+.medical-alert-info {
+  background-color: #bee3f8 !important;
+  color: #2b6cb0 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+}

@@ -42,12 +42,12 @@ const RegisterForm = () => {
 
           {/* Form Section */}
           <MDBCol md='6' className='d-flex align-items-center justify-content-center'>
-            <MDBCard className='w-100 mx-4' style={{ background: 'hsla(0, 0%, 100%, 0.85)', backdropFilter: 'blur(30px)' }}>
+            <MDBCard className='w-100 mx-4 auth-card'>
               <MDBCardBody className='p-5'>
-                <h2 className="fw-bold mb-5 text-center">Inscription</h2>
+                <h2 className="fw-bold mb-5 text-center" style={{ color: '#2c7a7b' }}>Inscription</h2>
 
                 <MDBInput
-                  wrapperClass='mb-4'
+                  wrapperClass='mb-4 auth-input'
                   label='Nom'
                   id='nom'
                   type='text'
@@ -57,7 +57,7 @@ const RegisterForm = () => {
                 />
 
                 <MDBInput
-                  wrapperClass='mb-4'
+                  wrapperClass='mb-4 auth-input'
                   label='Spécialité'
                   id='specialite'
                   type='text'
@@ -67,7 +67,7 @@ const RegisterForm = () => {
                 />
 
                 <MDBInput
-                  wrapperClass='mb-4'
+                  wrapperClass='mb-4 auth-input'
                   label='Email'
                   id='email'
                   type='email'
@@ -77,7 +77,7 @@ const RegisterForm = () => {
                 />
 
                 <MDBInput
-                  wrapperClass='mb-4'
+                  wrapperClass='mb-4 auth-input'
                   label='Mot de passe'
                   id='password'
                   type='password'
@@ -90,26 +90,31 @@ const RegisterForm = () => {
                   <MDBCheckbox name='newsletter' id='newsletter' label="S'abonner à la newsletter" />
                 </div>
 
-                <MDBBtn type="submit" className='w-100 mb-4' size='md'>S'inscrire</MDBBtn>
+                <MDBBtn type="submit" className='w-100 mb-4 auth-button' size='md'>S'inscrire</MDBBtn>
 
                 <div className="text-center">
                   <p>Ou inscrivez-vous avec :</p>
 
-                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#3b5998' }}>
+                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#2c7a7b' }}>
                     <MDBIcon fab icon='facebook-f' />
                   </MDBBtn>
 
-                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#55acee' }}>
+                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#2c7a7b' }}>
                     <MDBIcon fab icon='twitter' />
                   </MDBBtn>
 
-                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#dd4b39' }}>
+                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#2c7a7b' }}>
                     <MDBIcon fab icon='google' />
                   </MDBBtn>
 
-                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#333333' }}>
+                  <MDBBtn tag='a' color='none' className='mx-1' style={{ color: '#2c7a7b' }}>
                     <MDBIcon fab icon='github' />
                   </MDBBtn>
+                </div>
+
+                {/* Lien vers la page de connexion */}
+                <div className="text-center mt-3">
+                  <p>Déjà inscrit ? <span onClick={() => navigate('/login')} className="auth-link">Se connecter ici</span></p>
                 </div>
               </MDBCardBody>
             </MDBCard>
