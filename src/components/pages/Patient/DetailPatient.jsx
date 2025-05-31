@@ -24,29 +24,39 @@ import {
   MedicalServices
 } from "@mui/icons-material";
 import AnalyseList from "../Analyses/AnalyseList";
+import PatientForm from "./PatientForm";
 
-const DetailPatient = () => {
+function DetailPatient() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openEditForm, setOpenEditForm] = useState(false);
 
   useEffect(() => {
-    const fetchPatient = async () => {
-      try {
-        const response = await axios.get(`https://localhost:7162/api/patients/${id}`);
-        setPatient(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Erreur lors de la récupération du patient :", error);
-        setError("Erreur lors de la récupération des données du patient.");
-        setLoading(false);
-      }
-    };
-
     fetchPatient();
   }, [id]);
+
+  const fetchPatient = async () => {
+    try {
+      const response = await axios.get(`https://localhost:7162/api/patients/${id}`);
+      setPatient(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du patient :", error);
+      setError("Erreur lors de la récupération des données du patient.");
+      setLoading(false);
+    }
+  };
+
+  const handleEditClick = () => {
+    setOpenEditForm(true);
+  };
+
+  const handleCloseEditForm = () => {
+    setOpenEditForm(false);
+  };
 
   if (loading) {
     return (
@@ -147,7 +157,7 @@ const DetailPatient = () => {
                   bgcolor: 'rgba(255, 255, 255, 0.2)',
                 }
               }}
-              onClick={() => navigate(`/patients/edit/${patient.id}`)}
+              onClick={handleEditClick}
             >
               <Edit />
             </IconButton>
@@ -232,8 +242,8 @@ const DetailPatient = () => {
         </CardContent>
       </Card>
 
-      {/* Historique des Analyses sur toute la largeur */}
-      <Card elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, width: '100%' }}>
+      {/* Historique des Analyses */}
+      <Card elevation={3} sx={{ borderRadius: 3, overflow: 'hidden', width: '100%' }}>
         <Box sx={{
           background: 'linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%)',
           color: 'white',
@@ -247,11 +257,19 @@ const DetailPatient = () => {
           </Typography>
         </Box>
         <CardContent>
-          <AnalyseList patientId={id} />
+          <AnalyseList patientId={patient.id} />
         </CardContent>
       </Card>
+
+      {/* Formulaire de modification */}
+      <PatientForm
+        open={openEditForm}
+        handleClose={handleCloseEditForm}
+        selectedPatient={patient}
+        refreshPatients={fetchPatient}
+      />
     </Container>
   );
-};
+}
 
 export default DetailPatient;

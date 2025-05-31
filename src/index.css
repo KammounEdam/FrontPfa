@@ -1,5 +1,6 @@
 /* Palette de couleurs médicale professionnelle */
 :root {
+  /* Mode clair */
   --primary-color: #1976d2; /* Bleu médical professionnel */
   --primary-light: #42a5f5; /* Bleu clair */
   --primary-dark: #0d47a1; /* Bleu foncé */
@@ -14,32 +15,87 @@
   --warning-color: #dd6b20; /* Orange pour les avertissements */
   --border-color: #e2e8f0; /* Couleur de bordure légère */
   --gradient-blue: linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%); /* Dégradé de bleu */
+
+  /* Mode sombre */
+  --dark-primary-color: #0d47a1;
+  --dark-primary-light: #42a5f5;
+  --dark-primary-dark: #1a237e;
+  --dark-secondary-color: #2c5282;
+  --dark-accent-color: #1e88e5;
+  --dark-text-primary: #f7fafc;
+  --dark-text-secondary: #e2e8f0;
+  --dark-background-light: #1a202c;
+  --dark-background-paper: #2d3748;
+  --dark-error-color: #f56565;
+  --dark-success-color: #48bb78;
+  --dark-warning-color: #ed8936;
+  --dark-border-color: #4a5568;
+  --dark-gradient-blue: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1976d2 100%);
 }
 
 body {
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
-  background-color: var(--background-light);
-  color: var(--text-primary);
   margin: 0;
   padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme='light'] {
+  background-color: var(--background-light);
+  color: var(--text-primary);
+}
+
+body[data-theme='dark'] {
+  background-color: var(--dark-background-light);
+  color: var(--dark-text-primary);
 }
 
 .MuiButton-containedPrimary {
-  background: var(--gradient-blue) !important;
-  color: #FFFFFF !important;
   transition: all 0.3s ease !important;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
 }
 
+body[data-theme='light'] .MuiButton-containedPrimary {
+  background: var(--gradient-blue) !important;
+  color: #FFFFFF !important;
+}
+
+body[data-theme='dark'] .MuiButton-containedPrimary {
+  background: var(--dark-gradient-blue) !important;
+  color: #FFFFFF !important;
+}
+
 .MuiButton-containedPrimary:hover {
-  background: linear-gradient(135deg, #01579b 0%, #0d47a1 50%, #1976d2 100%) !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
   transform: translateY(-1px) !important;
 }
 
+body[data-theme='light'] .MuiButton-containedPrimary:hover {
+  background: linear-gradient(135deg, #01579b 0%, #0d47a1 50%, #1976d2 100%) !important;
+}
+
+body[data-theme='dark'] .MuiButton-containedPrimary:hover {
+  background: linear-gradient(135deg, #0d1b3e 0%, #1a237e 50%, #0d47a1 100%) !important;
+}
+
 .MuiPaper-root {
   border-radius: 8px !important;
+  transition: box-shadow 0.3s ease !important;
+}
+
+body[data-theme='light'] .MuiPaper-root {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+body[data-theme='dark'] .MuiPaper-root {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Transitions globales */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: ease;
+  transition-duration: 0.3s;
 }
 
 /* Classe pour remplacer l'ancien style noir */

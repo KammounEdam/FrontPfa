@@ -18,8 +18,10 @@ import {
   CircularProgress,
   Card,
   CardContent,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
-import { Edit, Delete, Person, PersonAdd } from "@mui/icons-material";
+import { Edit, Delete, Person, PersonAdd, Search } from "@mui/icons-material";
 import DeleteConfirmation from "../generique/DeleteConfirmation";
 import PatientForm from "../Patient/PatientForm"; // Formulaire pour l'ajout et la modification des patients
 import { useNavigate } from "react-router-dom";
@@ -28,6 +30,8 @@ const PatientsList = () => {
   const [openDelete, setOpenDelete] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState(null); // patient à supprimer
   const [patients, setPatients] = useState([]);
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [openForm, setOpenForm] = useState(false); // Contrôle d'ouverture du formulaire
   const [selectedPatient, setSelectedPatient] = useState(null); // Patient sélectionné pour modification
   const [loading, setLoading] = useState(true); // Indicateur de chargement
@@ -45,15 +49,29 @@ const PatientsList = () => {
     }
   }, [medecinId]);
 
+  useEffect(() => {
+    // Filtrer les patients en fonction de la recherche
+    const filtered = patients.filter(patient =>
+      patient.nom.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredPatients(filtered);
+  }, [searchQuery, patients]);
+
   const fetchPatientsByMedecin = async (medecinId) => {
     try {
       const response = await axios.get(`${API_URL}/medecin/${medecinId}/patients`);
-      setPatients(response.data);
+      const sortedPatients = response.data.sort((a, b) => a.nom.localeCompare(b.nom));
+      setPatients(sortedPatients);
+      setFilteredPatients(sortedPatients);
       setLoading(false);
     } catch (error) {
       console.error("Erreur lors du chargement des patients:", error);
       setLoading(false);
     }
+  };
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
   };
 
   const handleOpenDelete = (patient) => {
@@ -110,30 +128,62 @@ const PatientsList = () => {
             color: 'white',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
           }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 <Person sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Gestion des Patients
               </Typography>
-              <Button
-                variant="contained"
-                startIcon={<PersonAdd />}
-                onClick={handleAddPatient}
-                sx={{
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 'bold',
-                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
-                  background: 'linear-gradient(135deg, #0288d1 0%, #03a9f4 100%)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #01579b 0%, #0288d1 100%)',
-                    boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                Ajouter un Patient
-              </Button>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <TextField
+                  placeholder="Rechercher un patient..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    minWidth: '250px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: 'transparent',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'transparent',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'transparent',
+                      },
+                    },
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  startIcon={<PersonAdd />}
+                  onClick={handleAddPatient}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 'bold',
+                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+                    background: 'linear-gradient(135deg, #0288d1 0%, #03a9f4 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #01579b 0%, #0288d1 100%)',
+                      boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
+                    },
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  Ajouter un Patient
+                </Button>
+              </Box>
             </Box>
           </Box>
 
@@ -196,7 +246,7 @@ const PatientsList = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {patients.map((patient) => (
+                {filteredPatients.map((patient) => (
                   <TableRow
                     key={patient.id}
                     hover
@@ -254,7 +304,6 @@ const PatientsList = () => {
                     </TableCell>
                   </TableRow>
                 ))}
-
               </TableBody>
             </Table>
           </TableContainer>

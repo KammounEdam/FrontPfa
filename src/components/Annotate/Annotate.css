@@ -1,0 +1,189 @@
+/* Styles for the Annotate component */
+
+/* Tool buttons group */
+.BtnGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.BtnGroup button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.BtnGroup .btn-primary {
+  background: var(--gradient-blue);
+  border: none;
+}
+
+.BtnGroup .btn-outline-primary {
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  background: white;
+}
+
+.BtnGroup .btn-outline-primary:hover {
+  background: rgba(25, 118, 210, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Toggle buttons */
+#toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#toggle-btn:hover {
+  background: rgba(25, 118, 210, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+#toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Annotation cards */
+#card {
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+}
+
+#card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+#card .card-title {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+#card .card-subtitle {
+  font-size: 0.9rem;
+}
+
+/* Image container */
+.image-container {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+/* Parent container */
+.parent {
+  padding: 20px 0;
+}
+
+/* Annotations section */
+.annotations-section h1 {
+  color: var(--primary-dark);
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--primary-light);
+  padding-bottom: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .BtnGroup {
+    flex-direction: row;
+    margin-bottom: 15px;
+  }
+
+  #toggle-btn {
+    margin-right: 5px;
+  }
+}
+
+/* Annotorious library overrides */
+.a9s-annotationlayer .a9s-selection .a9s-outer {
+  stroke: var(--primary-color) !important;
+  stroke-width: 3px !important;
+  fill: rgba(25, 118, 210, 0.2) !important;
+}
+
+.a9s-annotationlayer .a9s-selection .a9s-inner {
+  stroke: white !important;
+  stroke-width: 1px !important;
+}
+
+.a9s-annotationlayer .a9s-handle {
+  fill: var(--primary-color) !important;
+  stroke: white !important;
+  stroke-width: 1px !important;
+}
+
+.a9s-annotationlayer .a9s-handle:hover {
+  fill: var(--primary-dark) !important;
+}
+
+.a9s-annotationlayer .a9s-annotation .a9s-outer {
+  stroke: var(--primary-color) !important;
+  stroke-width: 2px !important;
+  fill: rgba(25, 118, 210, 0.15) !important;
+}
+
+.a9s-annotationlayer .a9s-annotation:hover .a9s-outer {
+  stroke: var(--primary-dark) !important;
+  fill: rgba(25, 118, 210, 0.3) !important;
+}
+
+/* Editor popup styles */
+.r6o-editor {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.r6o-editor .r6o-btn {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease !important;
+}
+
+.r6o-editor .r6o-btn:hover {
+  background-color: var(--primary-dark) !important;
+}
+
+.r6o-editor textarea {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 4px !important;
+  padding: 8px !important;
+}
+
+.r6o-editor textarea:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2) !important;
+  outline: none !important;
+}

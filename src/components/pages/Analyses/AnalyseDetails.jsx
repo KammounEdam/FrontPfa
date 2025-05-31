@@ -1,113 +1,155 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import {
+  Container,
+  Paper,
+  Typography,
+  Box,
+  Button,
+  CircularProgress,
+  Alert,
+  Grid,
+  Divider
+} from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
 
 const AnalyseDetails = () => {
-  const { analyseId } = useParams();
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [analyse, setAnalyse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [showDialog, setShowDialog] = useState(false);
-  const [image1, setImage1] = useState(null);
-  const [image2, setImage2] = useState(null);
-  const [caption, setCaption] = useState('');
-  const [generating, setGenerating] = useState(false);
-
-  const apiBaseUrl = 'https://localhost:7162/api';
+  const [images, setImages] = useState([]);
 
   useEffect(() => {
-    const fetchAnalyse = async () => {
+    const fetchData = async () => {
+      if (!id) {
+        setError("ID de l'analyse non spécifié");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await axios.get(`${apiBaseUrl}/analyse/${analyseId}`);
-        setAnalyse(response.data);
+        // Récupérer les détails de l'analyse
+        const analyseResponse = await axios.get(`https://localhost:7162/api/Analyse/${id}`);
+        setAnalyse(analyseResponse.data);
+
+        // Récupérer les images associées
+        const imagesResponse = await axios.get(`https://localhost:7162/api/ImageMedicale/by-analyse/${id}`);
+        setImages(imagesResponse.data);
+
       } catch (err) {
-        setError('Erreur lors du chargement des détails de l’analyse.');
+        console.error("Erreur lors du chargement des données:", err);
+        setError(err.response?.data?.message || "Erreur lors du chargement des détails de l'analyse");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAnalyse();
-  }, [analyseId]);
+    fetchData();
+  }, [id]);
 
-  const handleGenerateReport = async () => {
-    if (!image1) return alert('Veuillez sélectionner au moins une image.');
-
-    const formData = new FormData();
-    formData.append('image1', image1);
-    if (image2) formData.append('image2', image2);
-
-    try {
-      setGenerating(true);
-      const response = await axios.post('http://127.0.0.1:5002/', formData);
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(response.data, 'text/html');
-      const result = doc.querySelector('#caption')?.textContent || 'Aucun rapport généré.';
-
-      setCaption(result);
-
-      // 🔄 Mettre à jour le champ Rapport dans l’analyse
-      await axios.put(`${apiBaseUrl}/analyse/${analyseId}/rapport`, result, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      // Actualiser les données de l’analyse
-      const updatedAnalyse = { ...analyse, rapport: result };
-      setAnalyse(updatedAnalyse);
-    } catch (err) {
-      console.error(err);
-      setCaption("Erreur lors de la génération du rapport.");
-    } finally {
-      setGenerating(false);
-    }
+  const handleBack = () => {
+    navigate(-1);
   };
 
-  if (loading) return <p>Chargement...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+        <Button startIcon={<ArrowBack />} onClick={handleBack}>
+          Retour
+        </Button>
+      </Container>
+    );
+  }
 
   return (
-    <div>
-      <h2>Détails de l’analyse</h2>
-      <p><strong>ID :</strong> {analyse.id}</p>
-      <p><strong>Date d’analyse :</strong> {new Date(analyse.dateAnalyse).toLocaleDateString()}</p>
-      <p><strong>Rapport :</strong> {analyse.rapport || 'Aucun rapport enregistré.'}</p>
-      <p><strong>ID Dossier Médical :</strong> {analyse.dossierMedicalId}</p>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Button startIcon={<ArrowBack />} onClick={handleBack} sx={{ mb: 2 }}>
+          Retour
+        </Button>
+        <Typography variant="h4" gutterBottom>
+          Détails de l'analyse
+        </Typography>
+      </Box>
 
-      <button onClick={() => setShowDialog(true)}>📝 Générer Rapport</button>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary">
+              Informations générales
+            </Typography>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1" gutterBottom>
+                <strong>Date d'analyse:</strong>{' '}
+                {new Date(analyse.dateAnalyse).toLocaleDateString('fr-FR', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                <strong>ID Dossier Médical:</strong> {analyse.dossierMedicalId}
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
 
-      {showDialog && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{ background: '#fff', padding: 20, borderRadius: 8, width: 400 }}>
-            <h3>Générer un rapport à partir d'images</h3>
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom color="primary">
+              Rapport
+            </Typography>
+            <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+              {analyse.rapport || "Aucun rapport disponible"}
+            </Typography>
+          </Paper>
+        </Grid>
 
-            <div>
-              <label>Image 1 (obligatoire) :</label>
-              <input type="file" accept="image/*" onChange={e => setImage1(e.target.files[0])} />
-            </div>
-            <div>
-              <label>Image 2 (optionnelle) :</label>
-              <input type="file" accept="image/*" onChange={e => setImage2(e.target.files[0])} />
-            </div>
-
-            <button onClick={handleGenerateReport} disabled={generating}>
-              {generating ? "Génération..." : "Générer"}
-            </button>
-            <button onClick={() => setShowDialog(false)} style={{ marginLeft: 10 }}>Fermer</button>
-
-            {caption && (
-              <div style={{ marginTop: 20 }}>
-                <strong>📝 Rapport :</strong>
-                <p>{caption}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+        {images.length > 0 && (
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom color="primary">
+                Images associées
+              </Typography>
+              <Grid container spacing={2}>
+                {images.map((image, index) => (
+                  <Grid item xs={12} sm={6} key={image.idIm}>
+                    <Paper elevation={3} sx={{ p: 2 }}>
+                      <img
+                        src={image.url}
+                        alt={`Image ${index + 1}`}
+                        style={{
+                          width: '100%',
+                          height: 'auto',
+                          maxHeight: '300px',
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+          </Grid>
+        )}
+      </Grid>
+    </Container>
   );
 };
 

@@ -16,6 +16,7 @@ import {
   IconButton,
   Tabs,
   Tab,
+  Alert,
 } from "@mui/material";
 import { AddPhotoAlternate, Delete } from "@mui/icons-material";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -23,26 +24,22 @@ import { faFileImage } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
 import Annotate from "../../../components/Annotate/Annotate";
 
-const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, dossierMedicalId }) => {
+const AnalyseForm = ({ 
+  open, 
+  onClose: handleClose, 
+  analyse: selectedAnalyse, 
+  dossierMedicalId, 
+  onSuccess,
+  currentAnalyseId 
+}) => {
   const API_URL = "https://localhost:7162/api/Analyse";
   const API_IMAGE_URL = "https://localhost:7162/api/ImageMedicale";
 
   const [formData, setFormData] = useState({
-    dateAnalyse: "",
+    dateAnalyse: new Date().toISOString().split('T')[0],
     rapport: "",
-    dossierMedicalId: dossierMedicalId || "",
+    dossierMedicalId: dossierMedicalId
   });
-
-  // Définir l'ID du dossier médical automatiquement
-  useEffect(() => {
-    if (dossierMedicalId) {
-      console.log("ID du dossier médical récupéré:", dossierMedicalId);
-      setFormData(prev => ({
-        ...prev,
-        dossierMedicalId: dossierMedicalId
-      }));
-    }
-  }, [dossierMedicalId]);
 
   // États pour la gestion des onglets
   const [tabValue, setTabValue] = useState(0);
@@ -50,7 +47,6 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
   // États pour l'upload d'images
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [imagesLoading, setImagesLoading] = useState(false); // Pour le chargement des images existantes
   const [showAnnotation, setShowAnnotation] = useState(false);
   const [selectedImageForAnnotation, setSelectedImageForAnnotation] = useState(null);
 
@@ -59,53 +55,18 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
   const [image2, setImage2] = useState(null);
   const [caption, setCaption] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // ID de l'analyse créée (pour l'upload d'images)
   const [createdAnalyseId, setCreatedAnalyseId] = useState(null);
 
-  // Icônes FontAwesome sont utilisées directement dans le JSX
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Fonction pour obtenir la date du jour au format YYYY-MM-DD
   const getTodayFormatted = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
-  };
-
-  // Fonction pour récupérer les images associées à une analyse
-  const fetchAnalyseImages = async (analyseId) => {
-    setImagesLoading(true);
-    try {
-      console.log("Récupération des images pour l'analyse ID:", analyseId);
-      console.log("URL de l'API:", `${API_IMAGE_URL}/by-analyse/${analyseId}`);
-
-      // Utiliser l'URL exacte fournie par l'API
-      const response = await axios.get(`https://localhost:7162/api/ImageMedicale/by-analyse/${analyseId}`);
-      console.log("Réponse brute:", response);
-      console.log("Images récupérées:", response.data);
-
-      if (!response.data || response.data.length === 0) {
-        console.log("Aucune image trouvée pour cette analyse");
-        setImagesLoading(false);
-        return [];
-      }
-
-      // Transformer les données pour correspondre à notre format
-      const images = response.data.map(img => ({
-        id: img.idIm,
-        url: img.url,
-        analyseId: img.analyseId,
-        isTemp: false // Ces images sont déjà sauvegardées
-      }));
-
-      console.log("Images transformées:", images);
-      setImagesLoading(false);
-      return images;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des images:", error);
-      console.error("Détails de l'erreur:", error.response || error.message);
-      setImagesLoading(false);
-      return [];
-    }
   };
 
   // Log pour le montage/démontage du composant
@@ -118,66 +79,44 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
 
   // Réinitialiser le formulaire à chaque ouverture
   useEffect(() => {
-    console.log("État 'open' changé:", open);
     if (open) {
-      const formattedDate = getTodayFormatted();
-      console.log("Date du jour formatée:", formattedDate);
-
-      if (selectedAnalyse) {
-        const analyseDate = selectedAnalyse.dateAnalyse?.split("T")[0] || formattedDate;
-        console.log("Utilisation de la date d'analyse existante ou date du jour:", analyseDate);
-
-        setFormData({
-          id: selectedAnalyse.id || 0,
-          dateAnalyse: analyseDate,
-          rapport: selectedAnalyse.rapport || "",
-          dossierMedicalId: selectedAnalyse.dossierMedicalId || "",
-        });
-
-        // Récupérer les images associées à l'analyse
-        if (selectedAnalyse.id) {
-          console.log("Analyse sélectionnée avec ID:", selectedAnalyse.id);
-          setCreatedAnalyseId(selectedAnalyse.id);
-
-          // Récupérer les images existantes
-          console.log("Appel de fetchAnalyseImages avec ID:", selectedAnalyse.id);
-          fetchAnalyseImages(selectedAnalyse.id)
-            .then(images => {
-              console.log("Images récupérées pour l'analyse:", images);
-              console.log("Nombre d'images récupérées:", images.length);
-
-              if (images.length > 0) {
-                console.log("Mise à jour de uploadedImages avec les images récupérées");
-                setUploadedImages(images);
-
-                // Si des images sont disponibles, les utiliser pour la génération de rapport
-                console.log("Images disponibles pour la génération de rapport");
-              } else {
-                console.log("Aucune image récupérée pour cette analyse");
-              }
-            })
-            .catch(error => {
-              console.error("Erreur lors de la récupération des images:", error);
-            });
-        }
-      } else {
-        // Pour une nouvelle analyse, définir automatiquement la date à aujourd'hui
-        console.log("Nouvelle analyse: utilisation de la date du jour:", formattedDate);
-
-        setFormData({
-          id: 0,
-          dateAnalyse: formattedDate,
-          rapport: "",
-          dossierMedicalId: dossierMedicalId || "",
-        });
-
-        // Réinitialiser les autres états
-        setUploadedImages([]);
-        setCreatedAnalyseId(null);
-        setTabValue(0);
+      // Si c'est une nouvelle analyse (ajout)
+      if (!selectedAnalyse && currentAnalyseId) {
+        // Passer directement à l'onglet Images
+        setTabValue(1);
+        setCreatedAnalyseId(currentAnalyseId);
+      }
+      // Si c'est une modification
+      else if (selectedAnalyse) {
+        setCreatedAnalyseId(selectedAnalyse.id);
+        // Charger les images existantes
+        fetchExistingImages(selectedAnalyse.id);
       }
     }
-  }, [open, selectedAnalyse, dossierMedicalId]);
+  }, [open, currentAnalyseId, selectedAnalyse]);
+
+  // Fonction pour charger les images existantes
+  const fetchExistingImages = async (analyseId) => {
+    try {
+      const response = await axios.get(`${API_IMAGE_URL}/by-analyse/${analyseId}`);
+      if (response.data && response.data.length > 0) {
+        const images = response.data.map(img => ({
+          id: img.idIm,
+          url: img.url,
+          analyseId: img.analyseId,
+          isTemp: false
+        }));
+        setUploadedImages(images);
+        
+        // Préparer les images pour la génération de rapport
+        if (images[0]) setImage1(images[0]);
+        if (images[1]) setImage2(images[1]);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des images:", error);
+      setError("Erreur lors du chargement des images existantes");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -186,8 +125,12 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
 
   // Gestion des onglets
   const handleTabChange = (_, newValue) => {
-    console.log("Changement d'onglet:", newValue);
-    console.log("Images disponibles:", uploadedImages);
+    // Si on essaie d'aller à l'onglet Génération de rapport sans images
+    if (newValue === 2 && uploadedImages.length === 0) {
+      alert("Veuillez d'abord ajouter au moins une image");
+      return;
+    }
+
     setTabValue(newValue);
   };
 
@@ -196,44 +139,64 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
     const file = event.target.files[0];
     if (!file) return;
 
-    // Stocker l'image pour la génération de rapport
-    if (!image1) {
-      setImage1(file);
-    } else if (!image2) {
-      setImage2(file);
+    // Vérifier si nous avons déjà un ID d'analyse
+    if (!createdAnalyseId) {
+      alert("Veuillez d'abord créer l'analyse en cliquant sur 'Ajouter' dans l'onglet Informations");
+      return;
     }
 
-    // Ajouter l'image à la liste des images uploadées temporairement
-    // même si nous n'avons pas encore d'ID d'analyse
-    const tempUrl = URL.createObjectURL(file);
+    setUploadLoading(true);
 
-    setUploadedImages(prev => [...prev, {
-      id: null, // ID temporaire
-      url: tempUrl,
-      file: file,
-      isTemp: true // Marquer comme temporaire
-    }]);
+    try {
+      // Upload direct de l'image
+      const uploadedImage = await uploadImageToServer(file, createdAnalyseId);
+      
+      // Ajouter l'image à la liste
+      setUploadedImages(prev => [...prev, uploadedImage]);
+
+      // Stocker l'image pour la génération de rapport
+      if (!image1) {
+        setImage1(file);
+      } else if (!image2) {
+        setImage2(file);
+      }
+
+    } catch (error) {
+      console.error("Erreur lors de l'upload de l'image:", error);
+      alert("Erreur lors de l'upload de l'image. Veuillez réessayer.");
+    } finally {
+      setUploadLoading(false);
+    }
   };
 
   // Fonction pour supprimer une image
-  const handleRemoveImage = (index) => {
+  const handleRemoveImage = async (index) => {
     const imageToRemove = uploadedImages[index];
 
-    // Mettre à jour les images pour la génération de rapport
-    if (image1 && image1 === imageToRemove.file) {
-      setImage1(null);
-    } else if (image2 && image2 === imageToRemove.file) {
-      setImage2(null);
-    }
+    try {
+      // Supprimer l'image du serveur
+      await axios.delete(`${API_IMAGE_URL}/${imageToRemove.id}`);
 
-    // Si l'image est en cours d'annotation, fermer l'annotation
-    if (selectedImageForAnnotation && selectedImageForAnnotation.id === imageToRemove.id) {
-      setShowAnnotation(false);
-      setSelectedImageForAnnotation(null);
-    }
+      // Mettre à jour les images pour la génération de rapport
+      if (image1 && image1 === imageToRemove.file) {
+        setImage1(null);
+      } else if (image2 && image2 === imageToRemove.file) {
+        setImage2(null);
+      }
 
-    // Supprimer l'image de la liste
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+      // Si l'image est en cours d'annotation, fermer l'annotation
+      if (selectedImageForAnnotation && selectedImageForAnnotation.id === imageToRemove.id) {
+        setShowAnnotation(false);
+        setSelectedImageForAnnotation(null);
+      }
+
+      // Supprimer l'image de la liste
+      setUploadedImages(prev => prev.filter((_, i) => i !== index));
+
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'image:", error);
+      alert("Erreur lors de la suppression de l'image. Veuillez réessayer.");
+    }
   };
 
   // Fonction pour ouvrir l'annotation d'une image
@@ -283,70 +246,72 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
     setSelectedImageForAnnotation(null);
   };
 
-  // Fonction pour télécharger une image à partir de son URL
-  const downloadImageAsFile = async (url) => {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      return new File([blob], "image.jpg", { type: blob.type });
-    } catch (error) {
-      console.error("Erreur lors du téléchargement de l'image:", error);
-      throw error;
-    }
-  };
-
   // Fonction pour générer un rapport
   const handleGenerateReport = async () => {
-    if (uploadedImages.length === 0) {
-      alert('Veuillez uploader au moins une image.');
-      return;
-    }
-
-    setGenerating(true);
-
     try {
-      const formData = new FormData();
+      setGenerating(true);
+      setCaption(''); // Reset any previous caption
 
-      // Utiliser les images uploadées
-      if (uploadedImages.length > 0) {
-        // Vérifier si l'image a un fichier ou juste une URL
-        if (uploadedImages[0].file) {
-          formData.append('image1', uploadedImages[0].file);
-        } else if (uploadedImages[0].url) {
-          // Télécharger l'image à partir de l'URL
-          try {
-            const file = await downloadImageAsFile(uploadedImages[0].url);
-            formData.append('image1', file);
-          } catch (error) {
-            console.error("Impossible de télécharger l'image 1:", error);
-            alert("Erreur lors du téléchargement de l'image 1. Veuillez réessayer.");
-            setGenerating(false);
-            return;
-          }
-        }
+      let imagesToUse = [];
 
-        if (uploadedImages.length > 1) {
-          if (uploadedImages[1].file) {
-            formData.append('image2', uploadedImages[1].file);
-          } else if (uploadedImages[1].url) {
-            // Télécharger l'image à partir de l'URL
-            try {
-              const file = await downloadImageAsFile(uploadedImages[1].url);
-              formData.append('image2', file);
-            } catch (error) {
-              console.error("Impossible de télécharger l'image 2:", error);
-              // Continuer avec juste l'image 1
-            }
+      // Si c'est une modification d'analyse, récupérer les images depuis l'API
+      if (selectedAnalyse) {
+        try {
+          const analyseId = selectedAnalyse.id;
+          const response = await axios.get(`${API_IMAGE_URL}/by-analyse/${analyseId}`);
+          
+          if (response.data && response.data.length > 0) {
+            // Convertir les URLs en fichiers
+            const images = await Promise.all(response.data.map(async (img) => {
+              const imageResponse = await fetch(img.url);
+              const blob = await imageResponse.blob();
+              return new File([blob], `image${img.idIm}.jpg`, { type: 'image/jpeg' });
+            }));
+            imagesToUse = images;
           }
+        } catch (error) {
+          console.error("Erreur lors de la récupération des images:", error);
+          throw new Error("Erreur lors du chargement des images de l'analyse.");
         }
+      } else {
+        // Pour une nouvelle analyse, utiliser les images déjà en mémoire
+        if (image1) imagesToUse.push(image1);
+        if (image2) imagesToUse.push(image2);
       }
 
-      // Appel à l'API Flask exactement comme dans AnalyseDetails.jsx
-      const response = await axios.post('http://127.0.0.1:5002/', formData);
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(response.data, 'text/html');
-      const result = doc.querySelector('#caption')?.textContent || 'Aucun rapport généré.';
+      if (imagesToUse.length === 0) {
+        throw new Error('Veuillez sélectionner au moins une image.');
+      }
 
+      // Vérifier si le serveur est disponible
+      try {
+        const healthCheck = await axios.get('http://127.0.0.1:5000/');
+        console.log('Server status:', healthCheck.data);
+      } catch {
+        throw new Error('Le serveur de génération de rapport n\'est pas accessible. Veuillez vérifier qu\'il est bien démarré.');
+      }
+
+      // Préparer le FormData avec les images
+      const formData = new FormData();
+      formData.append('image1', imagesToUse[0]);
+      if (imagesToUse[1]) {
+        formData.append('image2', imagesToUse[1]);
+      }
+
+      // Appel à l'API Flask pour la génération du rapport
+      const response = await axios.post('http://127.0.0.1:5000/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json',
+        },
+        timeout: 60000, // 60 secondes timeout
+      });
+
+      if (!response.data || !response.data.success) {
+        throw new Error(response.data?.error || 'Erreur lors de la génération du rapport');
+      }
+
+      const result = response.data.prediction || 'Aucun rapport généré.';
       setCaption(result);
 
       // Mettre à jour le champ rapport dans le formulaire
@@ -354,27 +319,10 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
         ...prev,
         rapport: result
       }));
-
-      // Si l'analyse existe déjà, mettre à jour le rapport
-      if (createdAnalyseId || selectedAnalyse) {
-        const analyseId = createdAnalyseId || selectedAnalyse.id;
-        await axios.put(`${API_URL}/${analyseId}/rapport`, result, {
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        // Rafraîchir la liste des analyses
-        refreshAnalyses();
-      }
-
     } catch (err) {
-      console.error(err);
-
-      // Message d'erreur plus détaillé
-      if (err.code === 'ERR_NETWORK') {
-        alert("Erreur de connexion au service de génération de rapport. Le service n'est pas disponible ou n'est pas démarré.");
-      } else {
-        alert(`Erreur lors de la génération du rapport: ${err.message}`);
-      }
+      console.error('Erreur:', err);
+      setCaption(err.message || "Erreur lors de la génération du rapport.");
+      alert(err.message || "Erreur lors de la génération du rapport.");
     } finally {
       setGenerating(false);
     }
@@ -415,103 +363,74 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
     }
   };
 
+  // Fonction pour sauvegarder l'analyse avec le rapport
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const analyseId = selectedAnalyse?.id || currentAnalyseId;
+      if (!analyseId) {
+        throw new Error("ID de l'analyse non trouvé");
+      }
+
+      // Récupérer d'abord l'analyse actuelle
+      const response = await axios.get(`${API_URL}/${analyseId}`);
+      const currentAnalyse = response.data;
+
+      // Mettre à jour l'analyse avec le nouveau rapport
+      const updatedAnalyse = {
+        ...currentAnalyse,
+        rapport: caption
+      };
+
+      // Envoyer la mise à jour au backend
+      await axios.put(`${API_URL}/${analyseId}`, updatedAnalyse);
+      
+      // Rafraîchir la liste des analyses
+      if (onSuccess) {
+        await onSuccess();
+      }
+      
+      // Fermer le formulaire
+      handleClose();
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde de l'analyse:", error);
+      alert("Erreur lors de la sauvegarde de l'analyse. Veuillez réessayer.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Vérifier que l'ID du dossier médical est bien défini
-    if (!formData.dossierMedicalId && dossierMedicalId) {
-      // Si l'ID n'est pas dans formData mais est disponible en prop, l'utiliser
-      setFormData(prev => ({
-        ...prev,
-        dossierMedicalId: dossierMedicalId
-      }));
-    }
-
-    // Vérifier que tous les champs requis sont remplis
-    if (!formData.dateAnalyse) {
-      alert("Veuillez sélectionner une date d'analyse.");
-      return;
-    }
-
-    if (!formData.dossierMedicalId) {
-      alert("L'ID du dossier médical est manquant. Veuillez réessayer.");
-      console.error("ID du dossier médical manquant:", { formData, dossierMedicalId });
-      return;
-    }
-
-    // Formater les données pour l'API
-    const formattedData = {
-      ...formData,
-      dateAnalyse: new Date(formData.dateAnalyse).toISOString(),
-      // S'assurer que dossierMedicalId est un nombre
-      dossierMedicalId: parseInt(formData.dossierMedicalId)
-    };
-
-    console.log("Données envoyées à l'API:", formattedData);
+    setLoading(true);
+    setError("");
 
     try {
-      let analyseId;
+      const data = {
+        ...formData,
+        dossierMedicalId: parseInt(dossierMedicalId)
+      };
 
       if (selectedAnalyse) {
-        await axios.put(`${API_URL}/${selectedAnalyse.id}`, formattedData);
-        analyseId = selectedAnalyse.id;
+        // Mode modification
+        await axios.put(`${API_URL}/${selectedAnalyse.id}`, {
+          ...data,
+          id: selectedAnalyse.id
+        });
       } else {
-        const response = await axios.post(API_URL, formattedData);
-        analyseId = response.data.id;
-        setCreatedAnalyseId(analyseId);
-
-        // Si nous avons des images temporaires, les uploader maintenant
-        if (uploadedImages.length > 0) {
-          setUploadLoading(true);
-
-          try {
-            const newUploadedImages = [];
-
-            // Uploader chaque image temporaire
-            for (const image of uploadedImages) {
-              if (image.isTemp) {
-                const uploadedImage = await uploadImageToServer(image.file, analyseId);
-                newUploadedImages.push(uploadedImage);
-              } else {
-                newUploadedImages.push(image);
-              }
-            }
-
-            // Mettre à jour la liste des images uploadées
-            setUploadedImages(newUploadedImages);
-
-            // Passer à l'onglet de génération de rapport si nous avons des images
-            if (newUploadedImages.length > 0) {
-              setTabValue(2);
-            }
-          } catch (uploadError) {
-            console.error("Erreur lors de l'upload des images:", uploadError);
-          } finally {
-            setUploadLoading(false);
-          }
-        }
+        // Mode ajout
+        await axios.post(API_URL, data);
       }
 
-      // Si nous sommes dans l'onglet principal et qu'il n'y a pas d'images à uploader,
-      // fermer le formulaire
-      if (tabValue === 0 && uploadedImages.length === 0) {
-        refreshAnalyses();
-        handleClose();
-      } else {
-        // Sinon, rafraîchir la liste des analyses
-        refreshAnalyses();
+      if (onSuccess) {
+        await onSuccess();
       }
-
+      handleClose();
     } catch (error) {
-      console.error("Erreur lors de l'enregistrement de l'analyse:", error);
-
-      // Afficher un message d'erreur plus détaillé
-      if (error.response) {
-        console.error("Détails de l'erreur:", error.response.data);
-        alert(`Erreur ${error.response.status}: ${JSON.stringify(error.response.data)}`);
-      } else {
-        alert("Erreur lors de l'enregistrement de l'analyse. Veuillez vérifier que tous les champs sont correctement remplis.");
-      }
+      console.error("Erreur lors de l'enregistrement:", error);
+      setError(error.response?.data?.message || "Une erreur est survenue lors de l'enregistrement");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -533,6 +452,11 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
       </Tabs>
 
       <DialogContent>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         {/* Onglet 1: Informations de base */}
         {tabValue === 0 && (
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
@@ -565,17 +489,6 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
                 </Button>
               </Box>
 
-              <TextField
-                label="Résultat"
-                name="rapport"
-                value={formData.rapport}
-                onChange={handleChange}
-                required
-                fullWidth
-                multiline
-                rows={4}
-              />
-
               <Box sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   ID du Dossier Médical
@@ -601,8 +514,8 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
               <Button onClick={handleClose} color="secondary" variant="outlined">
                 Annuler
               </Button>
-              <Button type="submit" color="primary" variant="contained">
-                {selectedAnalyse ? "Modifier" : "Ajouter"}
+              <Button type="submit" color="primary" variant="contained" disabled={loading}>
+                {loading ? "Enregistrement..." : (selectedAnalyse ? "Modifier" : "Ajouter")}
               </Button>
             </DialogActions>
           </Box>
@@ -636,18 +549,8 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
                   Images pour l'analyse (max: 2)
                 </Typography>
 
-                {/* Indicateur de chargement */}
-                {imagesLoading && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
-                    <CircularProgress />
-                    <Typography variant="body2" sx={{ ml: 2 }}>
-                      Chargement des images...
-                    </Typography>
-                  </Box>
-                )}
-
                 {/* Affichage des images uploadées */}
-                {!imagesLoading && uploadedImages.length > 0 && (
+                {uploadedImages.length > 0 && (
                   <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, mb: 2 }}>
                     {uploadedImages.map((image, index) => (
                       <Box key={index}>
@@ -856,14 +759,28 @@ const AnalyseForm = ({ open, handleClose, selectedAnalyse, refreshAnalyses, doss
               <Button onClick={() => setTabValue(1)} color="secondary" variant="outlined">
                 Retour aux images
               </Button>
-              <Button
-                onClick={handleClose}
-                color="primary"
-                variant="contained"
-                disabled={generating}
-              >
-                Terminer
-              </Button>
+              {caption ? (
+                <>
+                  <Button
+                    onClick={handleSave}
+                    color="primary"
+                    variant="contained"
+                    disabled={saving}
+                    startIcon={saving && <CircularProgress size={20} />}
+                  >
+                    {saving ? "Sauvegarde en cours..." : "Sauvegarder"}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={handleGenerateReport}
+                  color="primary"
+                  variant="contained"
+                  disabled={generating || uploadedImages.length === 0}
+                >
+                  {generating ? "Génération en cours..." : "Générer un rapport"}
+                </Button>
+              )}
             </DialogActions>
           </Box>
         )}

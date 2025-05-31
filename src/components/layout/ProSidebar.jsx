@@ -5,12 +5,29 @@ import { Box, IconButton, Typography } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import MenuIcon from "@mui/icons-material/Menu";
 import PeopleIcon from "@mui/icons-material/People";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 
-const ProSidebar = ({ collapsed, toggleSidebar }) => {
+const ProSidebar = ({ collapsed, toggleSidebar, darkMode }) => {
   const location = useLocation();
 
   // Fonction pour vérifier si un chemin est actif
   const isActive = (path) => location.pathname === path;
+
+  const gradientBg = darkMode
+    ? 'linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%)'
+    : 'linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%)';
+
+  const headerGradient = darkMode
+    ? 'linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%)'
+    : 'linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%)';
+
+  const hoverGradient = darkMode
+    ? 'linear-gradient(90deg, rgba(13, 71, 161, 0.2) 0%, rgba(25, 118, 210, 0.2) 50%, rgba(66, 165, 245, 0.2) 100%)'
+    : 'linear-gradient(90deg, rgba(13, 71, 161, 0.2) 0%, rgba(25, 118, 210, 0.2) 50%, rgba(66, 165, 245, 0.2) 100%)';
+
+  const activeGradient = darkMode
+    ? 'linear-gradient(90deg, rgba(13, 71, 161, 0.3) 0%, rgba(25, 118, 210, 0.3) 50%, rgba(66, 165, 245, 0.3) 100%)'
+    : 'linear-gradient(90deg, rgba(13, 71, 161, 0.3) 0%, rgba(25, 118, 210, 0.3) 50%, rgba(66, 165, 245, 0.3) 100%)';
 
   return (
     <Box
@@ -19,19 +36,23 @@ const ProSidebar = ({ collapsed, toggleSidebar }) => {
         position: "fixed",
         zIndex: 1200,
         transition: "all 0.3s ease-in-out",
-        background: 'linear-gradient(180deg, #0d47a1 0%, #1976d2 100%)',
-        boxShadow: "4px 0px 15px rgba(0, 0, 0, 0.15)",
+        background: gradientBg,
+        boxShadow: darkMode 
+          ? "4px 0px 15px rgba(0, 0, 0, 0.3)"
+          : "4px 0px 15px rgba(0, 0, 0, 0.15)",
       }}
     >
       <Sidebar
         collapsed={collapsed}
         rootStyles={{
-          background: 'linear-gradient(180deg, #0d47a1 0%, #1976d2 100%)',
-          color: "#FFFFFF", // Texte blanc pour une meilleure lisibilité
-          width: collapsed ? "80px" : "250px", // Largeur selon l'état de la sidebar
-          transition: "width 0.3s ease-in-out", // Transition de largeur
-          height: "100vh", // Hauteur de la sidebar
-          borderRight: "2px solid rgba(255, 255, 255, 0.1)", // Bordure droite subtile
+          background: gradientBg,
+          color: "#FFFFFF",
+          width: collapsed ? "80px" : "250px",
+          transition: "width 0.3s ease-in-out",
+          height: "100vh",
+          borderRight: darkMode 
+            ? "2px solid rgba(255, 255, 255, 0.05)"
+            : "2px solid rgba(255, 255, 255, 0.1)",
         }}
       >
         {/* Entête de la Sidebar */}
@@ -41,9 +62,13 @@ const ProSidebar = ({ collapsed, toggleSidebar }) => {
             alignItems: "center",
             justifyContent: collapsed ? "center" : "space-between",
             padding: "20px 20px",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-            background: 'linear-gradient(90deg, #0d47a1 0%, #1565c0 100%)',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+            borderBottom: darkMode 
+              ? "1px solid rgba(255, 255, 255, 0.05)"
+              : "1px solid rgba(255, 255, 255, 0.1)",
+            background: headerGradient,
+            boxShadow: darkMode
+              ? '0 2px 10px rgba(0, 0, 0, 0.2)'
+              : '0 2px 10px rgba(0, 0, 0, 0.1)',
           }}
         >
           {!collapsed && (
@@ -60,10 +85,12 @@ const ProSidebar = ({ collapsed, toggleSidebar }) => {
         <Menu
           menuItemStyles={{
             button: {
-              color: "#FFFFFF", // Texte blanc
+              color: "#FFFFFF",
               "&:hover": {
-                background: 'linear-gradient(90deg, rgba(25, 118, 210, 0.2) 0%, rgba(66, 165, 245, 0.2) 100%)',
-                boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)'
+                background: hoverGradient,
+                boxShadow: darkMode
+                  ? '0 2px 5px rgba(0, 0, 0, 0.2)'
+                  : '0 2px 5px rgba(0, 0, 0, 0.1)'
               },
               fontSize: "15px",
               borderRadius: "8px",
@@ -72,57 +99,53 @@ const ProSidebar = ({ collapsed, toggleSidebar }) => {
               transition: "all 0.2s ease"
             },
             subMenuContent: {
-              background: 'linear-gradient(180deg, rgba(13, 71, 161, 0.9) 0%, rgba(25, 118, 210, 0.9) 100%)',
+              background: 'transparent',
               color: "#fff",
-              boxShadow: 'inset 0 5px 10px rgba(0, 0, 0, 0.1)',
               padding: '5px',
               marginTop: '5px',
-              borderRadius: '8px'
             },
             subMenuLabel: {
               color: "#FFFFFF"
             },
           }}
         >
-
-
           {/* Menu Dashboard */}
           <MenuItem
             icon={<HomeIcon sx={{ fontSize: 22, color: "#FFFFFF" }} />}
             component={<Link to="/dashboard" />}
             style={{
-              background: isActive("/dashboard")
-                ? 'linear-gradient(90deg, rgba(66, 165, 245, 0.3) 0%, rgba(25, 118, 210, 0.3) 100%)'
-                : 'linear-gradient(90deg, rgba(13, 71, 161, 0.1) 0%, rgba(25, 118, 210, 0.1) 100%)',
-              color: isActive("/dashboard") ? "#fff" : "#FFFFFF",
+              background: isActive("/dashboard") ? activeGradient : 'transparent',
+              color: "#FFFFFF",
               fontWeight: isActive("/dashboard") ? "bold" : "normal",
               borderRadius: "8px",
-              boxShadow: isActive("/dashboard") ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
+              boxShadow: isActive("/dashboard") 
+                ? darkMode 
+                  ? '0 2px 8px rgba(0, 0, 0, 0.25)'
+                  : '0 2px 8px rgba(0, 0, 0, 0.15)'
+                : 'none',
               margin: "5px 10px",
             }}
           >
             Dashboard
           </MenuItem>
-     {/* Menu Dashboard */}
-
-
-          {/* Sous-menu Paramètres */}
 
           {/* Gestion Médicale */}
           <SubMenu
-            icon={<PeopleIcon sx={{ fontSize: 22, color: "#FFFFFF" }} />}
+            icon={<LocalHospitalIcon sx={{ fontSize: 22, color: "#FFFFFF" }} />}
             label="Gestion Médicale"
             defaultOpen={isActive("/patients")}
             rootStyles={{
               ['& > .ps-menu-button']: {
-                background: isActive("/patients")
-                  ? 'linear-gradient(90deg, rgba(66, 165, 245, 0.3) 0%, rgba(25, 118, 210, 0.3) 100%)'
-                  : 'linear-gradient(90deg, rgba(13, 71, 161, 0.2) 0%, rgba(25, 118, 210, 0.2) 100%)',
+                background: isActive("/patients") ? activeGradient : 'transparent',
                 borderRadius: "8px",
                 margin: "5px 10px",
-                boxShadow: isActive("/patients") ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
+                boxShadow: isActive("/patients")
+                  ? darkMode
+                    ? '0 2px 8px rgba(0, 0, 0, 0.25)'
+                    : '0 2px 8px rgba(0, 0, 0, 0.15)'
+                  : 'none',
                 '&:hover': {
-                  background: 'linear-gradient(90deg, rgba(13, 71, 161, 0.3) 0%, rgba(25, 118, 210, 0.3) 100%)',
+                  background: hoverGradient,
                 }
               }
             }}
@@ -131,24 +154,22 @@ const ProSidebar = ({ collapsed, toggleSidebar }) => {
               icon={<PeopleIcon sx={{ fontSize: 20, color: "#FFFFFF" }} />}
               component={<Link to="/patients" />}
               style={{
-                background: isActive("/patients")
-                  ? 'linear-gradient(90deg, rgba(66, 165, 245, 0.4) 0%, rgba(25, 118, 210, 0.4) 100%)'
-                  : 'linear-gradient(90deg, rgba(13, 71, 161, 0.1) 0%, rgba(25, 118, 210, 0.1) 100%)',
-                color: isActive("/patients") ? "#fff" : "#FFFFFF",
+                background: isActive("/patients") ? activeGradient : 'transparent',
+                color: "#FFFFFF",
                 fontWeight: isActive("/patients") ? "bold" : "normal",
                 borderRadius: "8px",
-                boxShadow: isActive("/patients") ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
+                boxShadow: isActive("/patients")
+                  ? darkMode
+                    ? '0 2px 8px rgba(0, 0, 0, 0.25)'
+                    : '0 2px 8px rgba(0, 0, 0, 0.15)'
+                  : 'none',
                 margin: "5px 10px",
                 padding: "8px 12px",
               }}
             >
               Patients
             </MenuItem>
-
-
           </SubMenu>
-
-
         </Menu>
       </Sidebar>
     </Box>

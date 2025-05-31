@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileImage, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import Annotate from "./Annotate";
 import axios from "axios";
-import { useParams } from "react-router-dom"; // Pour récupérer l'ID depuis l'URL
+import { useParams, useNavigate } from "react-router-dom";
+import { Button, Box, Typography, CircularProgress } from "@mui/material";
 
 const UploadAndDisplayImage = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
-  const { analyseId } = useParams(); // Récupère l'ID depuis l'URL (/analyses/:analyseId/add-image)
-  const [imageId, setImageId] = useState(null); // Nouvel état pour stocker l'ID
+  const { id: analyseId } = useParams();
+  const [imageId, setImageId] = useState(null);
+  const [loading, setLoading] = useState(false);
   const Trash = <FontAwesomeIcon icon={faTrashAlt} />;
   const FileImage = <FontAwesomeIcon icon={faFileImage} />;
+  const navigate = useNavigate();
 
   const refreshPage = () => {
     if (window.confirm("You will lose all annotations along with the image! Do you want to proceed?")) {
-      setSelectedImage(null);
       setImageUrl(null);
       window.location.reload(true);
     }
@@ -25,8 +26,7 @@ const UploadAndDisplayImage = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    setSelectedImage(file);
-
+    setLoading(true);
     try {
       // Étape 1: Upload de l'image
       const formData = new FormData();
@@ -44,54 +44,88 @@ const UploadAndDisplayImage = () => {
       // Étape 2: Création de l'objet ImageMedicale avec l'analyseId
       const imageMedicale = {
         url: uploadedImageUrl,
-        analyseId: parseInt(analyseId), // Conversion en number si nécessaire
+        analyseId: parseInt(analyseId),
         annotationGraphics: JSON.stringify([])
       };
 
       const creationResponse = await axios.post('https://localhost:7162/api/ImageMedicale', imageMedicale);
-      
-      // Sauvegarder l'ID de l'image créée
-      setImageId(creationResponse.data.idIm); // Supposons que le backend retourne l'ID
+      setImageId(creationResponse.data.idIm);
       
     } catch (error) {
       console.error("Error:", error);
-      setSelectedImage(null);
+      alert("Erreur lors de l'upload de l'image. Veuillez réessayer.");
       setImageUrl(null);
       setImageId(null);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Fonction pour retourner à la liste des analyses
+  const handleBack = () => {
+    navigate(-1); // Retourne à la page précédente
+  };
+
+  // Fonction pour terminer et aller à la génération de rapport
+  const handleFinish = () => {
+    navigate(`/analyses/${analyseId}/detail`);
+  };
+
   return (
-    <div className="container mt-5">
-      <h1>Upload and Display Image for Analysis {analyseId}</h1>
+    <Box sx={{ p: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Ajouter des images pour l'analyse {analyseId}
+      </Typography>
 
       {imageUrl ? (
-        <div className="image-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
-          {/* Passez à la fois l'URL et l'ID */}
+        <Box sx={{ position: 'relative', mb: 4 }}>
           <Annotate filedata={{ url: imageUrl, id: imageId }} />
-          <button id="toggle-btn" onClick={refreshPage}>
-            <i style={{ padding: '5px' }}>{Trash}</i> Remove
-          </button>
-        </div>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={refreshPage}
+            startIcon={<FontAwesomeIcon icon={faTrashAlt} />}
+            sx={{ mt: 2 }}
+          >
+            Supprimer
+          </Button>
+        </Box>
       ) : (
-        <div>
-          <label id="button-icon"><i style={{ padding: '5px' }}>{FileImage}</i></label>
-          <input
-            style={{
-              border: 'none',
-              padding: '16px 32px',
-              textDecoration: 'none',
-              margin: '4px 2px',
-              cursor: 'pointer'
-            }}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            required
-          />
-        </div>
+        <Box sx={{ mb: 4 }}>
+          <Button
+            variant="contained"
+            component="label"
+            startIcon={<FontAwesomeIcon icon={faFileImage} />}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <CircularProgress size={20} sx={{ mr: 1 }} />
+                Upload en cours...
+              </>
+            ) : (
+              "Sélectionner une image"
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleImageChange}
+              disabled={loading}
+            />
+          </Button>
+        </Box>
       )}
-    </div>
+
+      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Button variant="outlined" onClick={handleBack}>
+          Retour
+        </Button>
+        <Button variant="contained" onClick={handleFinish} disabled={!imageUrl}>
+          Terminer
+        </Button>
+      </Box>
+    </Box>
   );
 };
 
